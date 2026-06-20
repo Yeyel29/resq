@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f7f9fb;
+  --foreground: #191c1e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+::selection {
+  background: #86f2e4;
+  color: #0f172a;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
