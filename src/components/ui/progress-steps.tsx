@@ -8,7 +8,7 @@ type ProgressStepsProps = {
 
 export function ProgressSteps({ steps, activeIndex }: ProgressStepsProps) {
   return (
-    <ol className="grid gap-3 rounded-card border border-outline-variant/70 bg-white p-4 shadow-soft md:grid-cols-5">
+    <ol className="grid gap-3 rounded-card border border-outline-variant/70 bg-white p-4 shadow-soft sm:grid-cols-2 lg:grid-cols-6">
       {steps.map((step, index) => {
         const isComplete = index < activeIndex;
         const isActive = index === activeIndex;
