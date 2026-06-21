@@ -1,3 +1,5 @@
+import type { ColumnType } from "@/types/dataset";
+
 export type ResearchGoalStatus = "available" | "coming-soon";
 
 export type AnalysisGoalId =
@@ -18,7 +20,18 @@ export type ResearchGoal = {
   nextStepGuidance: string;
 };
 
-export type AnalysisDraftStatus = "goal_selected";
+export type VariableRole = "primary" | "x" | "y" | "group" | "outcome" | "predictor";
+
+export type SelectedVariable = {
+  name: string;
+  role: VariableRole;
+  type: ColumnType;
+};
+
+export type AnalysisDraftStatus =
+  | "goal_selected"
+  | "variables_selected"
+  | "recommendation_ready";
 
 export type AnalysisDraft = {
   datasetId: string;
@@ -26,6 +39,7 @@ export type AnalysisDraft = {
   goalId: AnalysisGoalId;
   goalTitle: string;
   status: AnalysisDraftStatus;
+  selectedVariables?: SelectedVariable[];
   createdAt: string;
   updatedAt: string;
 };

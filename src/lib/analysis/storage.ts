@@ -1,4 +1,4 @@
-import type { AnalysisDraft } from "@/types/analysis";
+import type { AnalysisDraft, SelectedVariable } from "@/types/analysis";
 
 export const ANALYSIS_DRAFT_STORAGE_KEY = "scholarstat.analysisDraft";
 
@@ -18,7 +18,10 @@ function isAnalysisDraftRecord(value: unknown): value is AnalysisDraft {
     typeof record.datasetName === "string" &&
     typeof record.goalId === "string" &&
     typeof record.goalTitle === "string" &&
-    record.status === "goal_selected" &&
+    (record.status === "goal_selected" ||
+      record.status === "variables_selected" ||
+      record.status === "recommendation_ready") &&
+    (record.selectedVariables === undefined || Array.isArray(record.selectedVariables)) &&
     typeof record.createdAt === "string" &&
     typeof record.updatedAt === "string"
   );
@@ -64,4 +67,16 @@ export function clearAnalysisDraft() {
   }
 
   window.sessionStorage.removeItem(ANALYSIS_DRAFT_STORAGE_KEY);
+}
+
+export function updateDraftSelectedVariables(
+  draft: AnalysisDraft,
+  selectedVariables: SelectedVariable[],
+): AnalysisDraft {
+  return {
+    ...draft,
+    selectedVariables,
+    status: "variables_selected",
+    updatedAt: new Date().toISOString(),
+  };
 }

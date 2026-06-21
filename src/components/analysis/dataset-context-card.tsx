@@ -43,7 +43,7 @@ export function DatasetContextCard({ dataset, profiles }: DatasetContextCardProp
               {dataset.name}
             </h2>
             <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-              {summary.rowCount.toLocaleString()} rows · {summary.columnCount.toLocaleString()} columns
+              {summary.rowCount.toLocaleString()} rows | {summary.columnCount.toLocaleString()} columns
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="numeric">{summary.numericCount} numeric</Badge>

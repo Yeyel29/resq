@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, Database } from "lucide-react";
-import { AnalysisNextStepPlaceholder } from "@/components/analysis/analysis-next-step-placeholder";
 import { DatasetContextCard } from "@/components/analysis/dataset-context-card";
+import { RecommendationPlaceholder } from "@/components/analysis/recommendation-placeholder";
 import { ResearchGoalCard } from "@/components/analysis/research-goal-card";
+import { VariableSelectionClient } from "@/components/analysis/variable-selection-client";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -24,6 +25,7 @@ type WizardState =
       dataset: UploadedDataset;
       draft: AnalysisDraft | null;
       profiles: ColumnProfile[];
+      profilesWereGenerated: boolean;
     }
   | { status: "missing" }
   | { status: "corrupt" };
@@ -37,21 +39,29 @@ const analysisWorkflowSteps = [
   "Results",
 ];
 
-function createProfiledDataset(dataset: UploadedDataset): UploadedDataset {
-  const columnProfiles = dataset.columnProfiles?.length
-    ? dataset.columnProfiles
-    : createColumnProfiles(dataset);
+function createProfiledDataset(dataset: UploadedDataset) {
+  const profilesWereGenerated = !dataset.columnProfiles?.length;
+  const columnProfiles = profilesWereGenerated
+    ? createColumnProfiles(dataset)
+    : dataset.columnProfiles;
 
-  return {
+  const profiledDataset = {
     ...dataset,
     columnProfiles,
+  };
+
+  return {
+    dataset: profiledDataset,
+    profilesWereGenerated,
   };
 }
 
 export function AnalysisWizardClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isVariablesStep = searchParams.get("step") === "variables";
+  const currentStep = searchParams.get("step");
+  const isVariablesStep = currentStep === "variables";
+  const isRecommendationStep = currentStep === "recommendation";
   const [wizardState, setWizardState] = useState<WizardState>({ status: "loading" });
   const [selectedGoal, setSelectedGoal] = useState<ResearchGoal | null>(null);
 
@@ -68,7 +78,7 @@ export function AnalysisWizardClient() {
       return;
     }
 
-    const dataset = createProfiledDataset(datasetState.dataset);
+    const { dataset, profilesWereGenerated } = createProfiledDataset(datasetState.dataset);
     saveDataset(dataset);
 
     const storedDraft = readAnalysisDraft();
@@ -80,6 +90,7 @@ export function AnalysisWizardClient() {
       dataset,
       draft,
       profiles: dataset.columnProfiles ?? [],
+      profilesWereGenerated,
     });
 
     if (draftGoal?.status === "available") {
@@ -96,7 +107,7 @@ export function AnalysisWizardClient() {
   }, [wizardState]);
 
   function trySampleDataset() {
-    const sampleDataset = createProfiledDataset(createSampleDataset());
+    const { dataset: sampleDataset } = createProfiledDataset(createSampleDataset());
     saveDataset(sampleDataset);
     router.push("/datasets/sample/profile");
   }
@@ -132,6 +143,64 @@ export function AnalysisWizardClient() {
       draft,
     });
     router.push("/analysis?step=variables");
+  }
+
+  function handleDraftUpdate(draft: AnalysisDraft) {
+    if (wizardState.status !== "ready") {
+      return;
+    }
+
+    saveAnalysisDraft(draft);
+    setWizardState({
+      ...wizardState,
+      draft,
+    });
+    router.push("/analysis?step=recommendation");
+  }
+
+  function renderNoGoalState() {
+    return (
+      <div className="min-w-0 space-y-8">
+        <PageHeader
+          description="Choose your research goal before selecting variables."
+          eyebrow="ANALYSIS WIZARD"
+          title="No research goal selected"
+        />
+        <ProgressSteps activeIndex={3} steps={analysisWorkflowSteps} />
+        <Card className="text-center">
+          <h1 className="text-2xl font-semibold text-primary">No research goal selected</h1>
+          <p className="mx-auto mt-3 max-w-xl leading-7 text-on-surface-variant">
+            Choose a research goal first before selecting variables.
+          </p>
+          <ButtonLink className="mt-6" href="/analysis">
+            Choose Research Goal
+          </ButtonLink>
+        </Card>
+      </div>
+    );
+  }
+
+  function renderNoVariablesState() {
+    return (
+      <div className="min-w-0 space-y-8">
+        <PageHeader
+          description="Select the columns needed for your research goal before the recommendation step."
+          eyebrow="ANALYSIS WIZARD"
+          title="No variables selected"
+        />
+        <ProgressSteps activeIndex={4} steps={analysisWorkflowSteps} />
+        <Card className="text-center">
+          <h1 className="text-2xl font-semibold text-primary">No variables selected</h1>
+          <p className="mx-auto mt-3 max-w-xl leading-7 text-on-surface-variant">
+            Choose the variable or variables for your research goal before viewing the test
+            recommendation placeholder.
+          </p>
+          <ButtonLink className="mt-6" href="/analysis?step=variables">
+            Back to Variables
+          </ButtonLink>
+        </Card>
+      </div>
+    );
   }
 
   if (wizardState.status === "loading") {
@@ -176,6 +245,15 @@ export function AnalysisWizardClient() {
   }
 
   if (wizardState.status === "missing") {
+    const missingTitle =
+      isVariablesStep || isRecommendationStep
+        ? "No dataset ready for variable selection"
+        : "No dataset ready for analysis";
+    const missingMessage =
+      isVariablesStep || isRecommendationStep
+        ? "Upload and profile a dataset first so ScholarStat can show the columns available for analysis."
+        : "Upload and profile a dataset first so ScholarStat can guide your research analysis.";
+
     return (
       <div className="min-w-0 space-y-8">
         <PageHeader
@@ -188,9 +266,9 @@ export function AnalysisWizardClient() {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-sky-helper text-secondary">
             <Database className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-semibold text-primary">No dataset ready for analysis</h1>
+          <h1 className="text-2xl font-semibold text-primary">{missingTitle}</h1>
           <p className="mx-auto mt-3 max-w-xl leading-7 text-on-surface-variant">
-            Upload and profile a dataset first so ScholarStat can guide your research analysis.
+            {missingMessage}
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <ButtonLink href="/upload">Upload Dataset</ButtonLink>
@@ -204,8 +282,39 @@ export function AnalysisWizardClient() {
   }
 
   const draftGoal = getResearchGoalById(activeDraft?.goalId);
-  const placeholderDraft =
-    isVariablesStep && activeDraft && draftGoal?.status === "available" ? activeDraft : null;
+  const hasAvailableDraft = activeDraft && draftGoal?.status === "available";
+
+  if ((isVariablesStep || isRecommendationStep) && !hasAvailableDraft) {
+    return renderNoGoalState();
+  }
+
+  if (isVariablesStep && activeDraft && draftGoal?.status === "available") {
+    return (
+      <VariableSelectionClient
+        dataset={wizardState.dataset}
+        draft={activeDraft}
+        goal={draftGoal}
+        onDraftUpdate={handleDraftUpdate}
+        profiles={wizardState.profiles}
+        profilesWereGenerated={wizardState.profilesWereGenerated}
+        steps={analysisWorkflowSteps}
+      />
+    );
+  }
+
+  if (isRecommendationStep && activeDraft && draftGoal?.status === "available") {
+    if (activeDraft.status !== "variables_selected" || !activeDraft.selectedVariables?.length) {
+      return renderNoVariablesState();
+    }
+
+    return (
+      <div className="min-w-0 space-y-8">
+        <ProgressSteps activeIndex={4} steps={analysisWorkflowSteps} />
+        <DatasetContextCard dataset={wizardState.dataset} profiles={wizardState.profiles} />
+        <RecommendationPlaceholder draft={activeDraft} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-w-0 space-y-8">
@@ -215,48 +324,39 @@ export function AnalysisWizardClient() {
         title="What do you want to find out?"
       />
 
-      <ProgressSteps
-        activeIndex={isVariablesStep ? 4 : 3}
-        steps={analysisWorkflowSteps}
-      />
+      <ProgressSteps activeIndex={3} steps={analysisWorkflowSteps} />
 
       <DatasetContextCard dataset={wizardState.dataset} profiles={wizardState.profiles} />
 
-      {placeholderDraft ? (
-        <AnalysisNextStepPlaceholder draft={placeholderDraft} />
-      ) : (
-        <>
-          <div className="grid gap-6 xl:grid-cols-2">
-            {researchGoals.map((goal) => (
-              <ResearchGoalCard
-                goal={goal}
-                key={goal.id}
-                onSelect={handleGoalSelect}
-                selected={selectedGoal?.id === goal.id}
-              />
-            ))}
-          </div>
+      <div className="grid gap-6 xl:grid-cols-2">
+        {researchGoals.map((goal) => (
+          <ResearchGoalCard
+            goal={goal}
+            key={goal.id}
+            onSelect={handleGoalSelect}
+            selected={selectedGoal?.id === goal.id}
+          />
+        ))}
+      </div>
 
-          <Card className="flex flex-col gap-4 border-secondary/20 bg-white lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-primary">
-                ScholarStat guides your analysis workflow, but your adviser or statistician should review final results before submission.
-              </p>
-              <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                Select an available research goal to prepare the next step. Variable selection will be added in Phase 6.
-              </p>
-            </div>
-            <Button
-              disabled={!selectedGoal}
-              onClick={continueToVariables}
-              type="button"
-              variant={selectedGoal ? "primary" : "disabled"}
-            >
-              Continue to Variable Selection
-            </Button>
-          </Card>
-        </>
-      )}
+      <Card className="flex flex-col gap-4 border-secondary/20 bg-white lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-primary">
+            ScholarStat guides your analysis workflow, but your adviser or statistician should review final results before submission.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">
+            Select an available research goal to prepare variable selection.
+          </p>
+        </div>
+        <Button
+          disabled={!selectedGoal}
+          onClick={continueToVariables}
+          type="button"
+          variant={selectedGoal ? "primary" : "disabled"}
+        >
+          Continue to Variable Selection
+        </Button>
+      </Card>
     </div>
   );
 }
