@@ -72,8 +72,12 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="relative overflow-hidden px-4 py-16 md:px-8 md:py-24">
-          <div className="mx-auto grid max-w-workspace items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+        <section className="relative overflow-hidden bg-background px-4 py-16 md:px-8 md:py-24">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute right-0 top-0 z-0 -mr-[20%] -mt-[10%] h-[80%] w-[60%] rounded-full bg-[#F2F4F6] opacity-60 blur-[100px]"
+          />
+          <div className="relative z-10 mx-auto grid max-w-workspace items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-surface-high px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-secondary">
                 <GraduationCap className="h-4 w-4" />

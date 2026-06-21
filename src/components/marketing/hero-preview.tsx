@@ -5,15 +5,7 @@ import { sampleResult } from "@/constants/sample-data";
 export function HeroPreview() {
   return (
     <div className="relative">
-      <div
-        aria-hidden="true"
-        className="absolute -bottom-10 -right-8 h-64 w-64 rounded-full bg-teal/25 blur-[80px]"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -top-8 right-8 h-44 w-44 rounded-full bg-sky-helper/55 blur-[70px]"
-      />
-      <div className="relative overflow-hidden rounded-[1.35rem] border border-outline-variant bg-white p-4 shadow-academic md:p-5">
+      <div className="relative z-10 overflow-hidden rounded-[1.35rem] border border-outline-variant bg-white p-4 shadow-academic md:p-5">
         <div className="mb-4 flex items-center justify-between rounded-xl border border-outline-variant bg-surface-low px-4 py-3">
           <div>
             <p className="text-sm font-semibold text-primary">student-research-sample.xlsx</p>
@@ -66,6 +58,10 @@ export function HeroPreview() {
           </div>
         </div>
       </div>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-8 -right-8 z-20 h-32 w-32 rounded-full bg-secondary opacity-20 blur-2xl mix-blend-multiply animate-scholarstat-glow-pulse"
+      />
     </div>
   );
 }
