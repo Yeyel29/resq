@@ -25,7 +25,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="h-fit rounded-card border border-outline-variant/70 bg-white p-3 shadow-academic lg:sticky lg:top-24">
+    <aside className="h-fit min-w-0 shrink-0 rounded-card border border-outline-variant/70 bg-white p-3 shadow-academic lg:sticky lg:top-24">
       <p className="px-3 pb-3 text-xs font-bold uppercase tracking-[0.18em] text-outline">
         Workflow
       </p>

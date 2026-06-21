@@ -7,6 +7,7 @@ type BadgeVariant =
   | "likert"
   | "text"
   | "date"
+  | "unknown"
   | "coming-soon"
   | "significant"
   | "warning";
@@ -17,6 +18,7 @@ const variants: Record<BadgeVariant, string> = {
   likert: "bg-primary-soft text-primary-container",
   text: "bg-surface-high text-on-surface-variant",
   date: "bg-surface-container text-on-surface-variant",
+  unknown: "bg-surface-container text-on-surface-variant",
   "coming-soon": "bg-surface-high text-outline",
   significant: "bg-secondary-container text-secondary",
   warning: "bg-warning-soft text-amber-800",
