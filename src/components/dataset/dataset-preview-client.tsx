@@ -126,7 +126,7 @@ export function DatasetPreviewClient() {
   const profileHref = `/datasets/${dataset.id}/profile`;
 
   return (
-    <>
+    <div className="min-w-0 space-y-6">
       <PageHeader
         description="Review your uploaded research dataset before profiling and analysis."
         eyebrow="Dataset Preview"
@@ -140,29 +140,33 @@ export function DatasetPreviewClient() {
         </div>
       </PageHeader>
 
-      <Card className="mb-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="flex items-start gap-4">
+      <Card className="min-w-0">
+        <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex min-w-0 flex-1 items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-helper text-secondary">
               <FileSpreadsheet className="h-6 w-6" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-on-surface-variant">Dataset name</p>
-              <h2 className="mt-1 text-2xl font-semibold text-primary">{dataset.name}</h2>
+              <h2 className="mt-1 break-words text-2xl font-semibold text-primary">
+                {dataset.name}
+              </h2>
               <p className="mt-2 text-sm text-on-surface-variant">
                 Uploaded for this browser session on{" "}
                 {new Date(dataset.uploadedAt).toLocaleString()}
               </p>
             </div>
           </div>
-          <Badge variant={dataset.id === "uploaded" ? "significant" : "text"}>
-            {sourceLabel}
-          </Badge>
+          <div className="shrink-0">
+            <Badge variant={dataset.id === "uploaded" ? "significant" : "text"}>
+              {sourceLabel}
+            </Badge>
+          </div>
         </div>
       </Card>
 
       {dataset.truncated ? (
-        <div className="mb-6 rounded-card border border-amber-200 bg-warning-soft p-4 text-sm font-semibold text-amber-900">
+        <div className="rounded-card border border-amber-200 bg-warning-soft p-4 text-sm font-semibold text-amber-900">
           This dataset was truncated for the MVP preview. Only the first 5,000 rows are
           available in this session.
           {dataset.originalRowCount ? (
@@ -174,7 +178,7 @@ export function DatasetPreviewClient() {
         </div>
       ) : null}
 
-      <div className="mb-6 rounded-card border border-sky-200 bg-sky-helper/70 p-4">
+      <div className="rounded-card border border-sky-200 bg-sky-helper/70 p-4">
         <div className="flex gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 flex-none text-secondary" />
           <p className="text-sm font-semibold leading-6 text-primary">
@@ -184,7 +188,7 @@ export function DatasetPreviewClient() {
         </div>
       </div>
 
-      <div className="mb-6 grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Rows" value={dataset.rowCount.toLocaleString()} />
         <StatCard label="Columns" value={dataset.columnCount.toLocaleString()} />
         <StatCard
@@ -203,6 +207,6 @@ export function DatasetPreviewClient() {
         columns={dataset.columns}
         rows={dataset.rows}
       />
-    </>
+    </div>
   );
 }

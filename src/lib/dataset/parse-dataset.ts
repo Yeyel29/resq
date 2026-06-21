@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import { isDatasetMissingValue } from "@/lib/dataset/missing-values";
 import type { DatasetCell, DatasetRow, UploadedDataset } from "@/types/dataset";
 
 export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
@@ -22,7 +23,7 @@ function getFileExtension(fileName: string): AllowedExtension | null {
 }
 
 function normalizeCell(value: unknown): DatasetCell {
-  if (value === undefined || value === null || value === "") {
+  if (isDatasetMissingValue(value)) {
     return null;
   }
 
@@ -41,18 +42,40 @@ function normalizeCell(value: unknown): DatasetCell {
   return String(value);
 }
 
-function normalizeColumnName(value: unknown, index: number) {
-  const name = String(value ?? "").trim();
-  return name || `Column ${index + 1}`;
+function normalizeHeader(value: unknown) {
+  return String(value ?? "").trim();
 }
 
-function normalizeRows(rows: unknown[][], columns: string[]): DatasetRow[] {
-  return rows.map((row) => {
-    return columns.reduce<DatasetRow>((record, column, index) => {
-      record[column] = normalizeCell(row[index]);
+function normalizeParsedRows(headerRow: unknown[], rows: unknown[][]) {
+  const normalizedHeaders = headerRow.map((header) => normalizeHeader(header));
+  const maxColumnCount = Math.max(
+    normalizedHeaders.length,
+    ...rows.map((row) => row.length),
+  );
+
+  const keptColumns = Array.from({ length: maxColumnCount }, (_, index) => {
+    const header = normalizedHeaders[index] ?? "";
+    const hasNonMissingValue = rows.some((row) => !isDatasetMissingValue(row[index]));
+
+    return {
+      finalName: header || `Column ${index + 1}`,
+      originalIndex: index,
+      shouldKeep: header !== "" || hasNonMissingValue,
+    };
+  }).filter((column) => column.shouldKeep);
+
+  const columns = keptColumns.map((column) => column.finalName);
+  const normalizedRows = rows.map((row) => {
+    return keptColumns.reduce<DatasetRow>((record, column) => {
+      record[column.finalName] = normalizeCell(row[column.originalIndex]);
       return record;
     }, {});
   });
+
+  return {
+    columns,
+    rows: normalizedRows,
+  };
 }
 
 export async function parseDatasetFile(file: File): Promise<UploadedDataset> {
@@ -95,14 +118,8 @@ export async function parseDatasetFile(file: File): Promise<UploadedDataset> {
     }
 
     const [headerRow, ...bodyRows] = sheetRows;
-    const columns = headerRow.map((value, index) => normalizeColumnName(value, index));
-
-    if (columns.length === 0) {
-      throw new DatasetParseError("This dataset has no columns to preview.");
-    }
-
     const nonEmptyRows = bodyRows.filter((row) =>
-      row.some((cell) => cell !== null && cell !== undefined && cell !== ""),
+      row.some((cell) => !isDatasetMissingValue(cell)),
     );
 
     if (nonEmptyRows.length === 0) {
@@ -111,15 +128,20 @@ export async function parseDatasetFile(file: File): Promise<UploadedDataset> {
 
     const truncated = nonEmptyRows.length > MAX_ROWS;
     const rowsToStore = nonEmptyRows.slice(0, MAX_ROWS);
+    const normalizedDataset = normalizeParsedRows(headerRow, rowsToStore);
+
+    if (normalizedDataset.columns.length === 0) {
+      throw new DatasetParseError("This dataset has no columns to preview.");
+    }
 
     return {
       id: "uploaded",
       name: file.name,
       fileType,
       rowCount: rowsToStore.length,
-      columnCount: columns.length,
-      columns,
-      rows: normalizeRows(rowsToStore, columns),
+      columnCount: normalizedDataset.columns.length,
+      columns: normalizedDataset.columns,
+      rows: normalizedDataset.rows,
       uploadedAt: new Date().toISOString(),
       truncated,
       originalRowCount: truncated ? nonEmptyRows.length : undefined,

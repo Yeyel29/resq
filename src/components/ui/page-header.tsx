@@ -9,8 +9,8 @@ type PageHeaderProps = {
 
 export function PageHeader({ eyebrow, title, description, children }: PageHeaderProps) {
   return (
-    <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-      <div className="max-w-3xl">
+    <div className="mb-8 flex min-w-0 flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div className="min-w-0 max-w-3xl">
         {eyebrow ? (
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-secondary">
             {eyebrow}
@@ -25,7 +25,7 @@ export function PageHeader({ eyebrow, title, description, children }: PageHeader
           </p>
         ) : null}
       </div>
-      {children}
+      {children ? <div className="shrink-0">{children}</div> : null}
     </div>
   );
 }

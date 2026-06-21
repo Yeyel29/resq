@@ -1,9 +1,10 @@
+import { isDatasetMissingValue } from "@/lib/dataset/missing-values";
 import type { DatasetCell, DatasetRow, UploadedDataset } from "@/types/dataset";
 
 export type PreviewColumnType = "numeric" | "text" | "mixed" | "empty" | "unknown";
 
 export function isMissingValue(value: unknown): boolean {
-  return value === null || value === undefined || String(value).trim() === "";
+  return isDatasetMissingValue(value);
 }
 
 export function countMissingValues(dataset: UploadedDataset): number {
@@ -17,7 +18,7 @@ export function countMissingValues(dataset: UploadedDataset): number {
 
 export function formatCellValue(value: DatasetCell | undefined): string {
   if (isMissingValue(value)) {
-    return "—";
+    return "\u2014";
   }
 
   if (typeof value === "boolean") {

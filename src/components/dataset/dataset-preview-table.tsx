@@ -67,9 +67,9 @@ export function DatasetPreviewTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-card border border-outline-variant bg-white shadow-soft">
+    <div className="min-w-0 overflow-hidden rounded-card border border-outline-variant bg-white shadow-soft">
       <div className="flex flex-col gap-4 border-b border-outline-variant bg-surface-low px-4 py-4 md:flex-row md:items-center md:justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-primary">Table preview</p>
           <p className="text-sm text-on-surface-variant">
             {rows.length === 0
@@ -77,7 +77,7 @@ export function DatasetPreviewTable({
               : `Showing rows ${firstRowNumber.toLocaleString()}-${lastRowNumber.toLocaleString()} of ${rows.length.toLocaleString()}`}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
           <label className="text-sm font-medium text-on-surface-variant" htmlFor="rows-per-page">
             Rows per page
           </label>
@@ -95,17 +95,19 @@ export function DatasetPreviewTable({
           </select>
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse text-left text-sm">
+      <div className="max-w-full overflow-x-auto">
+        <table className="w-max min-w-full table-auto border-collapse text-left text-sm">
           <thead className="sticky top-0 bg-surface-low text-xs uppercase tracking-wide text-on-surface-variant">
             <tr>
-              <th className="whitespace-nowrap border-b border-outline-variant px-4 py-4">
+              <th className="min-w-16 whitespace-nowrap border-b border-outline-variant px-4 py-4">
                 #
               </th>
               {columns.map((column) => (
-                <th className="whitespace-nowrap border-b border-outline-variant px-4 py-4" key={column}>
+                <th className="max-w-[220px] whitespace-nowrap border-b border-outline-variant px-4 py-4" key={column}>
                   <div className="flex flex-col gap-2">
-                    <span>{column}</span>
+                    <span className="block max-w-[220px] truncate" title={column}>
+                      {column}
+                    </span>
                     <span className="text-[10px] font-semibold normal-case tracking-normal text-outline">
                       Preview type
                     </span>
@@ -123,10 +125,13 @@ export function DatasetPreviewTable({
                 </td>
                 {columns.map((column) => (
                   <td
-                    className="whitespace-nowrap border-b border-outline-variant/60 px-4 py-4 tabular-nums text-on-surface-variant"
+                    className="max-w-[260px] whitespace-nowrap border-b border-outline-variant/60 px-4 py-4 tabular-nums text-on-surface-variant"
                     key={column}
                   >
-                    <span className={isMissingValue(row[column]) ? "text-outline" : ""}>
+                    <span
+                      className={`block max-w-[260px] truncate ${isMissingValue(row[column]) ? "text-outline" : ""}`}
+                      title={formatCellValue(row[column])}
+                    >
                       {formatCellValue(row[column])}
                     </span>
                   </td>

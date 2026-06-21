@@ -11,6 +11,7 @@ const labels: Record<ColumnType, string> = {
   likert: "Likert",
   date: "Date",
   text: "Text",
+  unknown: "Unknown",
 };
 
 export function ColumnTypeBadge({ type }: ColumnTypeBadgeProps) {
