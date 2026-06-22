@@ -13,8 +13,8 @@ export default function ResultsPage() {
     <AppShell>
       <PageHeader
         description="Study Hours and Final Grade"
-        eyebrow="Mock Result"
-        title={sampleResult.analysisType}
+        eyebrow="Sample Result"
+        title={`${sampleResult.analysisType} Sample`}
       >
         <div className="flex flex-wrap gap-3">
           <ButtonLink href="/export/sample">
@@ -27,7 +27,7 @@ export default function ResultsPage() {
           </ButtonLink>
           <ButtonLink href="/analysis" variant="ghost">
             <RotateCcw className="h-4 w-4" />
-            Run Another Analysis
+            Return to Analysis Wizard
           </ButtonLink>
         </div>
       </PageHeader>
@@ -41,6 +41,10 @@ export default function ResultsPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="xl:col-span-2 rounded-card border border-amber-200 bg-warning-soft p-4 text-sm font-semibold leading-6 text-amber-900">
+          This is a sample result screen only. Real analysis computation has not been
+          implemented yet.
+        </div>
         <MockScatterPlot />
         <div className="grid gap-6">
           <Card>

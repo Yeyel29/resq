@@ -146,7 +146,7 @@ function recommendDescriptive(
         "The selected variable should represent numeric measurements or scores.",
         "Missing values should be reviewed before interpreting the summary.",
       ],
-      nextStepLabel: "Continue to Analysis",
+      nextStepLabel: "Analysis computation coming next",
       canRunInCurrentMvp: true,
     });
   }
@@ -170,7 +170,7 @@ function recommendDescriptive(
         "Each response should belong to a clear category.",
         "Blank or missing responses should be reviewed before analysis.",
       ],
-      nextStepLabel: "Continue to Analysis",
+      nextStepLabel: "Analysis computation coming next",
       canRunInCurrentMvp: true,
     });
   }
@@ -194,7 +194,7 @@ function recommendDescriptive(
         "Response levels should follow an ordered scale.",
         "Missing values will not be included in the summary.",
       ],
-      nextStepLabel: "Continue to Analysis",
+      nextStepLabel: "Analysis computation coming next",
       canRunInCurrentMvp: true,
     });
   }
@@ -283,7 +283,7 @@ function recommendRelationship(
         "The relationship should be roughly linear.",
         "Extreme outliers may affect the result.",
       ],
-      nextStepLabel: "Continue to Analysis",
+      nextStepLabel: "Analysis computation coming next",
       canRunInCurrentMvp: true,
     });
   }
@@ -308,7 +308,7 @@ function recommendRelationship(
         "Variables may be ordinal, ranked, or not normally distributed.",
         "The relationship should be monotonic.",
       ],
-      nextStepLabel: "Continue to Analysis",
+      nextStepLabel: "Analysis computation coming next",
       canRunInCurrentMvp: true,
     });
   }
@@ -333,7 +333,7 @@ function recommendRelationship(
         "At least one variable may be ordinal or ranked.",
         "The relationship should be monotonic.",
       ],
-      nextStepLabel: "Continue to Analysis",
+      nextStepLabel: "Analysis computation coming next",
       canRunInCurrentMvp: true,
     });
   }

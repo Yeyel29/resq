@@ -17,8 +17,8 @@ const navItems = [
   { label: "Dataset Preview", href: "/datasets/sample/preview", icon: Database },
   { label: "Data Profile", href: "/datasets/sample/profile", icon: ListChecks },
   { label: "Analysis", href: "/analysis", icon: BarChart3 },
-  { label: "Results", href: "/results/sample", icon: LineChart },
-  { label: "Export", href: "/export/sample", icon: FileDown },
+  { label: "Sample Result", href: "/results/sample", icon: LineChart },
+  { label: "Export Preview", href: "/export/sample", icon: FileDown },
 ];
 
 export function Sidebar() {

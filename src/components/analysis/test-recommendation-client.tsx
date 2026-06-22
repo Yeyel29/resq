@@ -224,13 +224,18 @@ export function TestRecommendationClient({
         </div>
         <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
           {canContinue ? (
-            <ButtonLink href="/analysis?step=recommendation">
-              Continue to Analysis
-            </ButtonLink>
-          ) : (
             <Button disabled type="button" variant="disabled">
-              Continue to Analysis
+              Analysis Engine Coming Next
             </Button>
+          ) : (
+            <>
+              <ButtonLink href={`/datasets/${draft.datasetId}/profile`} variant="secondary">
+                Review Data Profile
+              </ButtonLink>
+              <ButtonLink href="/analysis" variant="ghost">
+                Choose Another Goal
+              </ButtonLink>
+            </>
           )}
           <ButtonLink href="/analysis?step=variables" variant="secondary">
             Back to Variables

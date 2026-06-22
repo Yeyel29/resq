@@ -19,7 +19,7 @@ export function Topbar() {
         </div>
         <div className="hidden shrink-0 items-center gap-2 rounded-full border border-outline-variant bg-surface-low px-4 py-2 text-sm text-on-surface-variant md:flex">
           <Search className="h-4 w-4" />
-          Phase 0 demo workspace
+          MVP workflow in progress
         </div>
       </div>
     </header>

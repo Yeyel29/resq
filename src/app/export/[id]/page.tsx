@@ -8,7 +8,7 @@ export default function ExportPreviewPage() {
   return (
     <AppShell>
       <PageHeader
-        description="A polished academic document preview for the mock correlation result. PDF generation is intentionally not implemented in Phase 0."
+        description="A polished academic document preview for the sample correlation result. Real PDF generation is intentionally not implemented yet."
         eyebrow="Export"
         title="Thesis-Style Export Preview"
       >

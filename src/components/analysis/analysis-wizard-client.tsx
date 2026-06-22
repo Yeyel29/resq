@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProgressSteps } from "@/components/ui/progress-steps";
 import { getResearchGoalById, researchGoals } from "@/constants/research-goals";
-import { readAnalysisDraft, saveAnalysisDraft } from "@/lib/analysis/storage";
+import { readAnalysisDraft, readAnalysisDraftState, saveAnalysisDraft } from "@/lib/analysis/storage";
 import { createColumnProfiles } from "@/lib/dataset/profile";
 import { createSampleDataset, readDatasetState, saveDataset } from "@/lib/dataset/storage";
 import type { AnalysisDraft, ResearchGoal } from "@/types/analysis";
@@ -24,6 +24,8 @@ type WizardState =
       status: "ready";
       dataset: UploadedDataset;
       draft: AnalysisDraft | null;
+      draftMismatch: boolean;
+      draftWasCorrupt: boolean;
       profiles: ColumnProfile[];
       profilesWereGenerated: boolean;
     }
@@ -81,7 +83,9 @@ export function AnalysisWizardClient() {
     const { dataset, profilesWereGenerated } = createProfiledDataset(datasetState.dataset);
     saveDataset(dataset);
 
-    const storedDraft = readAnalysisDraft();
+    const draftState = readAnalysisDraftState();
+    const storedDraft = draftState.status === "ready" ? draftState.draft : null;
+    const draftMismatch = Boolean(storedDraft && storedDraft.datasetId !== dataset.id);
     const draft = storedDraft?.datasetId === dataset.id ? storedDraft : null;
     const draftGoal = getResearchGoalById(draft?.goalId);
 
@@ -89,6 +93,8 @@ export function AnalysisWizardClient() {
       status: "ready",
       dataset,
       draft,
+      draftMismatch,
+      draftWasCorrupt: draftState.status === "corrupt",
       profiles: dataset.columnProfiles ?? [],
       profilesWereGenerated,
     });
@@ -173,7 +179,7 @@ export function AnalysisWizardClient() {
         <Card className="text-center">
           <h1 className="text-2xl font-semibold text-primary">No research goal selected</h1>
           <p className="mx-auto mt-3 max-w-xl leading-7 text-on-surface-variant">
-            Choose a research goal first before selecting variables.
+            Choose a research goal first so ScholarStat can suggest the next analysis step.
           </p>
           <ButtonLink className="mt-6" href="/analysis">
             Choose Research Goal
@@ -196,6 +202,62 @@ export function AnalysisWizardClient() {
           <h1 className="text-2xl font-semibold text-primary">No variables selected</h1>
           <p className="mx-auto mt-3 max-w-xl leading-7 text-on-surface-variant">
             Select the variable or variables you want to analyze before asking for a recommendation.
+          </p>
+          <ButtonLink className="mt-6" href="/analysis?step=variables">
+            Select Variables
+          </ButtonLink>
+        </Card>
+      </div>
+    );
+  }
+
+  function renderInvalidDraftState() {
+    return (
+      <div className="min-w-0 space-y-8">
+        <PageHeader
+          description="The saved analysis draft may be incomplete. Please choose your research goal and variables again."
+          eyebrow="ANALYSIS WIZARD"
+          title="We could not prepare a recommendation"
+        />
+        <ProgressSteps activeIndex={3} steps={analysisWorkflowSteps} />
+        <Card className="text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-error-soft text-error">
+            <AlertTriangle className="h-8 w-8" />
+          </div>
+          <h1 className="text-2xl font-semibold text-primary">
+            We could not prepare a recommendation
+          </h1>
+          <p className="mx-auto mt-3 max-w-xl leading-7 text-on-surface-variant">
+            The saved analysis draft may be incomplete. Please choose your research goal and
+            variables again.
+          </p>
+          <ButtonLink className="mt-6" href="/analysis">
+            Restart Analysis Wizard
+          </ButtonLink>
+        </Card>
+      </div>
+    );
+  }
+
+  function renderDraftMismatchState() {
+    return (
+      <div className="min-w-0 space-y-8">
+        <PageHeader
+          description="The selected analysis draft does not match the current dataset."
+          eyebrow="ANALYSIS WIZARD"
+          title="Review your variables again"
+        />
+        <ProgressSteps activeIndex={4} steps={analysisWorkflowSteps} />
+        <Card className="text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-warning-soft text-amber-700">
+            <AlertTriangle className="h-8 w-8" />
+          </div>
+          <h1 className="text-2xl font-semibold text-primary">
+            The selected analysis draft does not match the current dataset.
+          </h1>
+          <p className="mx-auto mt-3 max-w-xl leading-7 text-on-surface-variant">
+            Please review your research goal and variables again before asking ScholarStat for a
+            recommendation.
           </p>
           <ButtonLink className="mt-6" href="/analysis?step=variables">
             Back to Variables
@@ -289,6 +351,14 @@ export function AnalysisWizardClient() {
 
   const draftGoal = getResearchGoalById(activeDraft?.goalId);
   const hasAvailableDraft = activeDraft && draftGoal?.status === "available";
+
+  if (isRecommendationStep && wizardState.draftWasCorrupt) {
+    return renderInvalidDraftState();
+  }
+
+  if (isRecommendationStep && wizardState.draftMismatch) {
+    return renderDraftMismatchState();
+  }
 
   if ((isVariablesStep || isRecommendationStep) && !hasAvailableDraft) {
     return renderNoGoalState();

@@ -176,19 +176,20 @@ export default function LandingPage() {
             <div className="flex gap-4 text-sm text-white/70">
               <span className="inline-flex items-center gap-2">
                 <UploadCloud className="h-4 w-4" />
-                Phase 0 demo
+                Recommendation workflow available
               </span>
               <span className="inline-flex items-center gap-2">
                 <Download className="h-4 w-4" />
-                Mock export only
+                Results and export coming soon
               </span>
             </div>
           </div>
           <p className="mt-8 max-w-4xl text-sm leading-6 text-white/70">
-            Academic Disclaimer: ScholarStat assists with preliminary analysis planning,
-            mock result presentation, and research writing workflows. Statistical results
-            and generated interpretations must be reviewed by a research adviser,
-            statistician, or qualified academic reviewer before submission.
+            Academic Disclaimer: ScholarStat currently supports dataset upload, preview,
+            profiling, research goal selection, variable selection, and statistical test
+            recommendation. Real analysis computation and thesis-style export are coming
+            next. Statistical results and generated interpretations must be reviewed by a
+            research adviser, statistician, or qualified academic reviewer before submission.
           </p>
         </div>
       </footer>

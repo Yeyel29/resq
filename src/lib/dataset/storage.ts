@@ -1,5 +1,5 @@
 import { sampleRows } from "@/constants/sample-data";
-import type { UploadedDataset } from "@/types/dataset";
+import type { ColumnProfile, ColumnType, DatasetCell, DatasetRow, UploadedDataset } from "@/types/dataset";
 
 export const DATASET_STORAGE_KEY = "scholarstat.currentDataset";
 
@@ -16,40 +16,83 @@ export function saveDataset(dataset: UploadedDataset) {
 }
 
 export function readDataset(): UploadedDataset | null {
-  if (!hasBrowserStorage()) {
-    return null;
-  }
-
-  const stored = window.sessionStorage.getItem(DATASET_STORAGE_KEY);
-
-  if (!stored) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(stored) as UploadedDataset;
-  } catch {
-    window.sessionStorage.removeItem(DATASET_STORAGE_KEY);
-    return null;
-  }
+  const state = readDatasetState();
+  return state.status === "ready" ? state.dataset : null;
 }
 
-function isDatasetRecord(value: unknown): value is UploadedDataset {
-  if (!value || typeof value !== "object") {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isDatasetCell(value: unknown): value is DatasetCell {
+  return (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  );
+}
+
+function isDatasetRow(value: unknown): value is DatasetRow {
+  return isRecord(value) && Object.values(value).every(isDatasetCell);
+}
+
+function isColumnType(value: unknown): value is ColumnType {
+  return (
+    value === "numeric" ||
+    value === "categorical" ||
+    value === "likert" ||
+    value === "date" ||
+    value === "text" ||
+    value === "unknown"
+  );
+}
+
+function isColumnProfile(value: unknown): value is ColumnProfile {
+  if (!isRecord(value)) {
     return false;
   }
 
-  const record = value as Partial<UploadedDataset>;
+  return (
+    typeof value.name === "string" &&
+    isColumnType(value.detectedType) &&
+    (value.userConfirmedType === undefined || isColumnType(value.userConfirmedType)) &&
+    typeof value.missingCount === "number" &&
+    typeof value.missingPercentage === "number" &&
+    typeof value.uniqueCount === "number" &&
+    Array.isArray(value.sampleValues) &&
+    value.sampleValues.every(isDatasetCell) &&
+    Array.isArray(value.warnings) &&
+    value.warnings.every((warning) => typeof warning === "string")
+  );
+}
+
+function isDatasetRecord(value: unknown): value is UploadedDataset {
+  if (!isRecord(value)) {
+    return false;
+  }
 
   return (
-    typeof record.id === "string" &&
-    typeof record.name === "string" &&
-    (record.fileType === "csv" || record.fileType === "xlsx") &&
-    typeof record.rowCount === "number" &&
-    typeof record.columnCount === "number" &&
-    Array.isArray(record.columns) &&
-    Array.isArray(record.rows) &&
-    typeof record.uploadedAt === "string"
+    typeof value.id === "string" &&
+    typeof value.name === "string" &&
+    (value.fileType === "csv" || value.fileType === "xlsx") &&
+    typeof value.rowCount === "number" &&
+    Number.isFinite(value.rowCount) &&
+    value.rowCount > 0 &&
+    typeof value.columnCount === "number" &&
+    Number.isFinite(value.columnCount) &&
+    value.columnCount > 0 &&
+    Array.isArray(value.columns) &&
+    value.columns.length > 0 &&
+    value.columns.every((column) => typeof column === "string" && column.trim() !== "") &&
+    Array.isArray(value.rows) &&
+    value.rows.length > 0 &&
+    value.rows.every(isDatasetRow) &&
+    typeof value.uploadedAt === "string" &&
+    (value.truncated === undefined || typeof value.truncated === "boolean") &&
+    (value.originalRowCount === undefined || typeof value.originalRowCount === "number") &&
+    (value.columnProfiles === undefined ||
+      (Array.isArray(value.columnProfiles) && value.columnProfiles.every(isColumnProfile)))
   );
 }
 

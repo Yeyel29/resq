@@ -4,9 +4,9 @@
 
 Status: Ready with minor fixes
 
-ScholarStat is still aligned with the original MVP direction: a guided thesis-focused research statistics assistant for student researchers and thesis writers. The current app supports the planned flow through Phase 6: landing page, upload, preview, profile, research goal selection, variable selection, and a Phase 7 recommendation placeholder.
+ScholarStat is still aligned with the original MVP direction: a guided thesis-focused research statistics assistant for student researchers and thesis writers. The current app supports the planned flow through Phase 7: landing page, upload, preview, profile, research goal selection, variable selection, and statistical test recommendation.
 
-The project is ready to begin Phase 7, provided Phase 7 stays focused on statistical test recommendation only. There are no major blockers in the current frontend flow. Minor issues remain around generated build artifacts, lack of a lint script, browser-only persistence, basic type detection, and placeholder mock results/export pages.
+The project is ready to prepare for real analysis computation, provided the next phase stays focused and does not imply results have been calculated before the analysis engine exists. There are no major blockers in the current frontend flow. Minor issues remain around generated build artifacts, lack of a lint script, browser-only persistence, basic type detection, and placeholder sample results/export pages.
 
 Build status checked:
 
@@ -37,24 +37,25 @@ The results and export pages are still mock placeholders, so the product has not
 | Phase | Goal | Status | Notes |
 |---|---|---|---|
 | Phase 0 | Project foundation | Complete | Next.js App Router structure, TypeScript types, Tailwind theme, app shell, reusable UI components, mock routes, and placeholder pages are present. |
-| Phase 1 | Landing page | Partial | The landing page communicates ScholarStat's thesis analysis positioning and uses the academic visual system. It is still simpler than the full requested Phase 1 copy plan and footer text still references "Phase 0 demo". |
+| Phase 1 | Landing page | Partial | The landing page communicates ScholarStat's thesis analysis positioning and uses the academic visual system. Footer/status copy now reflects the current in-progress MVP workflow instead of the earlier foundation-demo state. |
 | Phase 2 | Dataset upload | Complete | CSV/XLSX upload, validation, parsing, sample dataset flow, sessionStorage persistence, privacy reminder, and row truncation are implemented client-side. |
 | Phase 3 | Dataset preview | Complete | Preview page reads uploaded/sample datasets, shows metadata, missing value count, source badges, pagination, empty/corrupt states, and contained horizontal table scrolling. |
 | Phase 4 | Data profiling | Complete | Basic column type detection, missing/unique counts, sample values, warnings, editable type overrides, and profile persistence are implemented. Detection is intentionally MVP-level. |
 | Phase 5 | Analysis wizard | Complete | Research goal cards use beginner-friendly language. `Describe my data` and `Find a relationship between variables` are available. `Compare groups` and `Predict an outcome` are marked coming soon. |
-| Phase 6 | Variable selection | Complete | Variable selection exists for descriptive and relationship goals, uses effective column types, validates choices, saves selected variables, and shows the Phase 7 recommendation placeholder. |
+| Phase 6 | Variable selection | Complete | Variable selection exists for descriptive and relationship goals, uses effective column types, validates choices, and saves selected variables. |
+| Phase 7 | Statistical test recommendation | Complete | The recommendation screen suggests a starting analysis path from selected goal and variable types without running real statistical calculations. |
 
 ## 4. Implemented Routes
 
 | Route | Purpose | Status | Data Source | Notes |
 |---|---|---|---|---|
-| `/` | Landing page and product positioning | Implemented | Static content and mock preview | Communicates thesis-focused analysis assistant positioning. Still contains "Phase 0 demo" footer text. |
+| `/` | Landing page and product positioning | Implemented | Static content and mock preview | Communicates thesis-focused analysis assistant positioning and clearly says real analysis/export are coming next. |
 | `/upload` | Dataset upload entry point | Implemented | Client-selected CSV/XLSX or sample dataset | Real client-side parsing, validation, sample flow, and sessionStorage save are implemented. |
 | `/datasets/[id]/preview` | Dataset preview | Implemented | sessionStorage or sample fallback | Supports `/datasets/uploaded/preview` and `/datasets/sample/preview`. Shows empty/corrupt states. |
 | `/datasets/[id]/profile` | Data profiling | Implemented | sessionStorage or sample fallback | Generates column profiles and persists user type overrides. |
 | `/analysis` | Research goal selection | Implemented | sessionStorage dataset and analysis draft | Shows dataset context, goal cards, and creates `scholarstat.analysisDraft`. |
 | `/analysis?step=variables` | Variable selection step | Implemented | sessionStorage dataset, column profiles, and draft | Supports descriptive and relationship variable selection. |
-| `/analysis?step=recommendation` | Phase 7 placeholder | Implemented as placeholder | sessionStorage analysis draft | Summarizes selected goal and variables. Does not recommend a statistical test yet. |
+| `/analysis?step=recommendation` | Statistical test recommendation | Implemented | sessionStorage analysis draft | Recommends a starting analysis path from selected goal and variable types. Does not run real statistical calculations yet. |
 | `/results/[id]` | Mock results page | Implemented as placeholder | Mock sample result | Still static/mock. No real statistical computation. |
 | `/export/[id]` | Mock thesis-style export preview | Implemented as placeholder | Mock sample export content | No real PDF generation. |
 
@@ -69,7 +70,7 @@ Landing page
 -> Data profile
 -> Choose research goal
 -> Select variables
--> Recommendation placeholder
+-> Recommended analysis path
 ```
 
 Flow status:
@@ -149,7 +150,7 @@ Read by:
 
 - Analysis wizard
 - Variable selection
-- Recommendation placeholder
+- Recommendation screen
 
 Risks:
 
@@ -289,7 +290,6 @@ The wizard does not force users to choose technical tests. Technical terms appea
 
 Known limits:
 
-- The old `analysis-next-step-placeholder.tsx` component still exists but is no longer the primary Phase 6 path.
 - The wizard relies on `sessionStorage` and does not persist drafts across browsers/devices.
 
 ## 11. Variable Selection Status
@@ -317,7 +317,7 @@ Effective type usage:
 userConfirmedType ?? detectedType
 ```
 
-The recommendation placeholder summarizes:
+The recommendation screen summarizes:
 
 - Dataset name
 - Research goal
@@ -325,7 +325,7 @@ The recommendation placeholder summarizes:
 - Variable role
 - Variable type
 
-No real statistical recommendation is implemented yet.
+Real statistical recommendation is implemented as guidance only. No statistical calculation is implemented yet.
 
 ## 12. UI/UX and Design System Status
 
@@ -355,7 +355,7 @@ Implemented UI areas:
 - Data profile table
 - Research goal cards
 - Variable cards/selects
-- Recommendation placeholder
+- Statistical test recommendation screen
 - Mock result and export screens
 
 Glow implementation:
@@ -366,7 +366,7 @@ Glow implementation:
 
 Known UI/UX issues or polish items:
 
-- Landing footer still references "Phase 0 demo" and "Mock export only"; this is honest but may feel outdated after Phase 6.
+- Results and export screens are clearly sample/future screens until real analysis and PDF export are implemented.
 - Some copy still describes results/export as mock, which is accurate until real analysis/export phases are implemented.
 - Mobile table and profile-table UX should be manually tested with very wide real datasets.
 - There is no formal automated accessibility test setup.
@@ -407,7 +407,7 @@ Known code quality risks:
 - `sessionStorage` validation is basic.
 - There are no automated tests.
 - There is no lint script.
-- Some legacy placeholder components remain after newer flows were added.
+- Legacy recommendation placeholder components have been removed after the Phase 7 recommendation screen replaced them.
 - Build artifacts can temporarily change `next-env.d.ts` between `.next/dev/types` and `.next/types`; this should not be committed accidentally.
 
 ## 14. Known Issues or Risks
@@ -420,7 +420,7 @@ Known code quality risks:
 - No real statistical engine exists yet.
 - Type detection is basic and can misclassify data.
 - Variable selection allows some later-feature combinations with warning instead of blocking them.
-- No real statistical test recommendation exists yet.
+- Statistical test recommendation exists as a guided rule-based planning step, but it does not run calculations.
 - Results page is mock/static.
 - Export page is mock/static.
 - No real PDF generation exists.
@@ -430,9 +430,9 @@ Known code quality risks:
 - No lint script exists.
 - Direct route access depends on friendly empty states rather than server-backed recovery.
 
-## 15. Missing Pieces Before Phase 7
+## 15. Missing Pieces Before Real Analysis
 
-Already in place for Phase 7:
+Already in place for real analysis planning:
 
 - Dataset loaded from `scholarstat.currentDataset`
 - Column profiles available or generated
@@ -441,35 +441,30 @@ Already in place for Phase 7:
 - Selected variables stored in `scholarstat.analysisDraft`
 - Validation before reaching recommendation placeholder
 - Route state for `/analysis?step=recommendation`
-- Recommendation placeholder summary
+- Stored recommendation output
 
-Missing or recommended before Phase 7:
+Missing or recommended before real analysis:
 
-- Decide the exact recommendation output shape.
-- Add a typed recommendation model.
-- Add recommendation rules without running real analysis.
-- Add assumption/warning messages for recommendation results.
-- Add a clear no-data/no-goal/no-variable recovery path on the recommendation view.
 - Add or defer a lint/test setup decision.
 
-No blocking missing pieces were found for starting Phase 7.
+No blocking missing pieces were found for starting the descriptive statistics engine.
 
 ## 16. Phase 7 Readiness Assessment
 
-Is the project ready for Phase 7?
+Is the project ready for real analysis implementation?
 
 Ready with minor fixes.
 
 Reason:
 
-Phase 7 needs selected research goal, selected variable(s), effective column types, dataset context, and analysis draft persistence. These are now implemented. The app can route to `/analysis?step=recommendation` and display a saved summary without performing real statistics.
+Real analysis needs selected research goal, selected variable(s), effective column types, dataset context, and analysis draft persistence. These are now implemented. The app can route to `/analysis?step=recommendation`, save a recommendation, and stop honestly before computation.
 
 Minor fixes to consider first:
 
 - Add a lint script or decide to defer linting.
-- Remove or archive unused legacy placeholder components.
-- Consider improving the `AnalysisDraft` validation for selected variable object shape.
-- Update outdated "Phase 0 demo" copy when the owner is ready.
+- Add automated tests around dataset parsing, profiling, variable selection, and recommendation rules.
+- Add linting when a confirmed ESLint setup is introduced.
+- Keep sample results/export clearly marked until real output exists.
 
 ## 17. Recommended Next Steps
 
