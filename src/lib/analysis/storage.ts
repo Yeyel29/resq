@@ -1,4 +1,4 @@
-import type { AnalysisDraft, SelectedVariable } from "@/types/analysis";
+import type { AnalysisDraft, SelectedVariable, TestRecommendation } from "@/types/analysis";
 
 export const ANALYSIS_DRAFT_STORAGE_KEY = "scholarstat.analysisDraft";
 
@@ -22,6 +22,8 @@ function isAnalysisDraftRecord(value: unknown): value is AnalysisDraft {
       record.status === "variables_selected" ||
       record.status === "recommendation_ready") &&
     (record.selectedVariables === undefined || Array.isArray(record.selectedVariables)) &&
+    (record.recommendation === undefined ||
+      (typeof record.recommendation === "object" && record.recommendation !== null)) &&
     typeof record.createdAt === "string" &&
     typeof record.updatedAt === "string"
   );
@@ -77,6 +79,19 @@ export function updateDraftSelectedVariables(
     ...draft,
     selectedVariables,
     status: "variables_selected",
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export function updateDraftRecommendation(
+  draft: AnalysisDraft,
+  recommendation: TestRecommendation,
+): AnalysisDraft {
+  return {
+    ...draft,
+    recommendation,
+    selectedVariables: recommendation.selectedVariables,
+    status: "recommendation_ready",
     updatedAt: new Date().toISOString(),
   };
 }

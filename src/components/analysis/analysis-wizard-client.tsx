@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, Database } from "lucide-react";
 import { DatasetContextCard } from "@/components/analysis/dataset-context-card";
-import { RecommendationPlaceholder } from "@/components/analysis/recommendation-placeholder";
 import { ResearchGoalCard } from "@/components/analysis/research-goal-card";
+import { TestRecommendationClient } from "@/components/analysis/test-recommendation-client";
 import { VariableSelectionClient } from "@/components/analysis/variable-selection-client";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -145,7 +145,7 @@ export function AnalysisWizardClient() {
     router.push("/analysis?step=variables");
   }
 
-  function handleDraftUpdate(draft: AnalysisDraft) {
+  function handleDraftUpdate(draft: AnalysisDraft, nextPath = "/analysis?step=recommendation") {
     if (wizardState.status !== "ready") {
       return;
     }
@@ -155,7 +155,10 @@ export function AnalysisWizardClient() {
       ...wizardState,
       draft,
     });
-    router.push("/analysis?step=recommendation");
+
+    if (nextPath) {
+      router.push(nextPath);
+    }
   }
 
   function renderNoGoalState() {
@@ -192,8 +195,7 @@ export function AnalysisWizardClient() {
         <Card className="text-center">
           <h1 className="text-2xl font-semibold text-primary">No variables selected</h1>
           <p className="mx-auto mt-3 max-w-xl leading-7 text-on-surface-variant">
-            Choose the variable or variables for your research goal before viewing the test
-            recommendation placeholder.
+            Select the variable or variables you want to analyze before asking for a recommendation.
           </p>
           <ButtonLink className="mt-6" href="/analysis?step=variables">
             Back to Variables
@@ -246,11 +248,15 @@ export function AnalysisWizardClient() {
 
   if (wizardState.status === "missing") {
     const missingTitle =
-      isVariablesStep || isRecommendationStep
+      isRecommendationStep
+        ? "No dataset found"
+        : isVariablesStep
         ? "No dataset ready for variable selection"
         : "No dataset ready for analysis";
     const missingMessage =
-      isVariablesStep || isRecommendationStep
+      isRecommendationStep
+        ? "Upload and profile a dataset first so ScholarStat can recommend an analysis path."
+        : isVariablesStep
         ? "Upload and profile a dataset first so ScholarStat can show the columns available for analysis."
         : "Upload and profile a dataset first so ScholarStat can guide your research analysis.";
 
@@ -303,16 +309,21 @@ export function AnalysisWizardClient() {
   }
 
   if (isRecommendationStep && activeDraft && draftGoal?.status === "available") {
-    if (activeDraft.status !== "variables_selected" || !activeDraft.selectedVariables?.length) {
+    if (
+      (activeDraft.status !== "variables_selected" &&
+        activeDraft.status !== "recommendation_ready") ||
+      !activeDraft.selectedVariables?.length
+    ) {
       return renderNoVariablesState();
     }
 
     return (
-      <div className="min-w-0 space-y-8">
-        <ProgressSteps activeIndex={4} steps={analysisWorkflowSteps} />
-        <DatasetContextCard dataset={wizardState.dataset} profiles={wizardState.profiles} />
-        <RecommendationPlaceholder draft={activeDraft} />
-      </div>
+      <TestRecommendationClient
+        dataset={wizardState.dataset}
+        draft={activeDraft}
+        onDraftUpdate={handleDraftUpdate}
+        profiles={wizardState.profiles}
+      />
     );
   }
 
